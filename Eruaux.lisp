@@ -1,0 +1,52 @@
+;;; -*- Mode: Lisp; Syntax: Common-Lisp; -*-
+;;; Code of Artificial Intelligence Programming
+;;; Copyright (c) 2016 Shukai Ni
+
+;;; Auxiliary functions used by eru.lisp.
+;;; Load this file before running any other programs.
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+    (defun starts-with (list x)
+    "Is x a list whose first element is x?"
+    (and (consp list) (eql (first list) x)))
+  )
+
+;;;; PATTERN MATCHING FACILITY
+
+(defconstant fail nil)
+(defconstant no-bindings '((t . t)))
+
+(defun match-variable (var input bindings)
+  "Does VAR match input?  Uses (or updates) and returns bindings."
+  (let ((binding (get-binding var bindings)))
+    (cond ((not binding) (extend-bindings var input bindings))
+          ((equal input (binding-val binding)) bindings)
+          (t fail))))
+
+(defun make-binding (var val) (cons var val))
+
+(defun binding-var (binding)
+  "Get the variable part of a single binding."
+  (car binding))
+
+(defun binding-val (binding)
+  "Get the value part of a single binding."
+  (cdr binding))
+
+(defun get-binding (var bindings)
+  "Find a (variable . value) pair in a binding list."
+  (assoc var bindings))
+
+(defun lookup (var bindings)
+  "Get the value part (for var) from a binding list."
+  (binding-val (get-binding var bindings)))
+
+(defun extend-bindings (var val bindings)
+  "Add a (var . value) pair to a binding list."
+  (cons (cons var val)
+        ;; Once we add a "real" binding,
+        ;; we can get rid of the dummy no-bindings
+        (if (eq bindings no-bindings)
+            nil
+            bindings)))
+
